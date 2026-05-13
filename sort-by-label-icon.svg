@@ -1,0 +1,38 @@
+<svg width="144" height="144" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3a8fc4"/>
+      <stop offset="100%" stop-color="#0c4f7a"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.22)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.04)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="144" height="144" rx="28" fill="url(#bg)"/>
+  <rect width="144" height="72" rx="28" fill="url(#sheen)"/>
+  <rect y="72" width="144" height="72" fill="url(#sheen)" opacity="0.3"/>
+
+  <!-- Left column: descending label strips -->
+  <rect x="18" y="30" width="46" height="11" rx="5.5" fill="#61c4f0" opacity="0.95"/>
+  <rect x="18" y="50" width="34" height="11" rx="5.5" fill="#4db3e2" opacity="0.85"/>
+  <rect x="18" y="70" width="22" height="11" rx="5.5" fill="#3aa0cc" opacity="0.75"/>
+
+  <!-- Right column: ascending label strips -->
+  <rect x="80" y="30" width="22" height="11" rx="5.5" fill="#f0a04a" opacity="0.9"/>
+  <rect x="80" y="50" width="34" height="11" rx="5.5" fill="#e8893a" opacity="0.85"/>
+  <rect x="80" y="70" width="46" height="11" rx="5.5" fill="#e07230" opacity="0.8"/>
+
+  <!-- Down arrow (left) -->
+  <line x1="41" y1="90" x2="41" y2="112" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+  <polyline points="33,104 41,114 49,104" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+
+  <!-- Up arrow (right) -->
+  <line x1="103" y1="114" x2="103" y2="92" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+  <polyline points="95,100 103,90 111,100" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+
+  <!-- Center divider -->
+  <line x1="72" y1="24" x2="72" y2="120" stroke="rgba(255,255,255,0.14)" stroke-width="1" stroke-dasharray="3 4"/>
+</svg>
