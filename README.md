@@ -1,5 +1,7 @@
 # ⇅ Sort by Label — Trello Power-Up
 
+![Sort by Label icon](sort-by-label-icon.svg)
+
 A lightweight Trello Power-Up that lets you sort cards within any list by their label — alphabetically, reverse, or with unlabeled cards first. The popup automatically adapts its color theme to match whatever background is set on the board it's loaded into.
 
 ---
