@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sort by Label</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── CSS Reset & Variables ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --top:      #62a6d4;
+      --bot:      #0f6391;
+      --is-dark:  1;
+      --fg:       rgba(255,255,255,0.95);
+      --fg-dim:   rgba(255,255,255,0.55);
+      --card-bg:  rgba(255,255,255,0.10);
+      --card-bdr: rgba(255,255,255,0.16);
+      --accent:   #fff;
+      --btn-bg:   rgba(255,255,255,0.92);
+      --btn-fg:   #0f3d5c;
+      --btn-shad: 0 4px 18px rgba(0,0,0,0.35);
+      --select-bg: rgba(255,255,255,0.12);
+      --select-bdr: rgba(255,255,255,0.25);
+      --hover-bg: rgba(255,255,255,0.08);
+      --radio-checked: #fff;
+      --status-ok:  #6ee7b7;
+      --status-err: #fca5a5;
+    }
+
+    body.light {
+      --fg:        rgba(15,25,40,0.92);
+      --fg-dim:    rgba(15,25,40,0.52);
+      --card-bg:   rgba(0,0,0,0.06);
+      --card-bdr:  rgba(0,0,0,0.12);
+      --accent:    var(--bot);
+      --btn-bg:    var(--bot);
+      --btn-fg:    #fff;
+      --btn-shad:  0 4px 18px rgba(0,0,0,0.18);
+      --select-bg: rgba(0,0,0,0.05);
+      --select-bdr: rgba(0,0,0,0.18);
+      --hover-bg:  rgba(0,0,0,0.05);
+      --radio-checked: var(--bot);
+      --status-ok:  #065f46;
+      --status-err: #991b1b;
+    }
+
+    /* ── Layout ────────────────────────────────────────────── */
+    html, body {
+      width: 100%; height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    .shell {
+      position: relative;
+      width: 100%; height: 100%;
+      overflow: hidden;
+    }
+
+    /* Board-matched gradient background */
+    .bg-layer {
+      position: absolute; inset: 0;
+      background: linear-gradient(160deg, var(--top) 0%, var(--bot) 100%);
+      z-index: 0;
+    }
+    /* Subtle noise texture for depth */
+    .bg-layer::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      opacity: 0.25;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ── Header ────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--card-bdr);
+    }
+    .header-icon {
+      width: 28px; height: 28px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-bdr);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      backdrop-filter: blur(4px);
+    }
+    .header h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg);
+      letter-spacing: 0.01em;
+    }
+    .header p {
+      font-size: 11px;
+      color: var(--fg-dim);
+      margin-top: 1px;
+      font-weight: 400;
+    }
+
+    /* ── Glass Card ────────────────────────────────────────── */
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-bdr);
+      border-radius: 10px;
+      padding: 12px;
+      backdrop-filter: blur(8px);
+    }
+
+    /* ── Field Label ───────────────────────────────────────── */
+    .field-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--fg-dim);
+      margin-bottom: 6px;
+    }
+
+    /* ── Select ────────────────────────────────────────────── */
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      background: var(--select-bg);
+      border: 1px solid var(--select-bdr);
+      border-radius: 7px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='rgba(255,255,255,0.6)' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 30px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    body.light select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='rgba(0,0,0,0.45)' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    }
+    select:focus {
+      border-color: var(--accent);
+      background-color: var(--hover-bg);
+    }
+    select option {
+      background: #1a3a52;
+      color: #fff;
+    }
+    body.light select option {
+      background: #fff;
+      color: #1a1a2e;
+    }
+
+    /* ── Sort Options (radio pills) ────────────────────────── */
+    .sort-pills {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .pill-label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .pill-label:hover { background: var(--hover-bg); }
+    .pill-label input[type="radio"] { display: none; }
+    .pill-dot {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--card-bdr);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .pill-dot::after {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: transparent;
+      transition: background 0.15s;
+    }
+    .pill-label input:checked + .pill-dot {
+      border-color: var(--radio-checked);
+    }
+    .pill-label input:checked + .pill-dot::after {
+      background: var(--radio-checked);
+    }
+    .pill-text {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--fg);
+    }
+    .pill-label input:checked ~ .pill-text {
+      color: var(--fg);
+    }
+
+    /* ── Sort Button ───────────────────────────────────────── */
+    #sortBtn {
+      width: 100%;
+      padding: 10px;
+      background: var(--btn-bg);
+      color: var(--btn-fg);
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: var(--btn-shad);
+      transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    #sortBtn::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.15), transparent);
+      opacity: 1;
+    }
+    #sortBtn:hover:not(:disabled) {
+      opacity: 0.93;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(0,0,0,0.4);
+    }
+    #sortBtn:active:not(:disabled) { transform: translateY(0); }
+    #sortBtn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── Status ────────────────────────────────────────────── */
+    #status {
+      font-size: 11px;
+      text-align: center;
+      min-height: 14px;
+      color: var(--fg-dim);
+      font-family: 'DM Mono', monospace;
+      transition: color 0.2s;
+      padding: 0 4px;
+    }
+    #status.success { color: var(--status-ok); }
+    #status.error   { color: var(--status-err); }
+
+    /* ── Divider ───────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--card-bdr);
+      margin: 0 -16px;
+    }
+
+    /* ── Fade-in on load ───────────────────────────────────── */
+    .content { animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0);   }
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="bg-layer"></div>
+
+  <div class="content">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-icon">⇅</div>
+      <div>
+        <h2>Sort Cards by Label</h2>
+        <p>Reorder cards in any list instantly</p>
+      </div>
+    </div>
+
+    <!-- List selector -->
+    <div class="glass-card">
+      <div class="field-label">Select a list</div>
+      <select id="listSelect">
+        <option value="">Loading lists…</option>
+      </select>
+    </div>
+
+    <!-- Sort direction -->
+    <div class="glass-card">
+      <div class="field-label">Sort order</div>
+      <div class="sort-pills">
+        <label class="pill-label">
+          <input type="radio" name="sortDir" value="asc" checked>
+          <span class="pill-dot"></span>
+          <span class="pill-text">A → Z &nbsp;<span style="opacity:.55;font-weight:400;font-size:11px">(ascending)</span></span>
+        </label>
+        <label class="pill-label">
+          <input type="radio" name="sortDir" value="desc">
+          <span class="pill-dot"></span>
+          <span class="pill-text">Z → A &nbsp;<span style="opacity:.55;font-weight:400;font-size:11px">(descending)</span></span>
+        </label>
+        <label class="pill-label">
+          <input type="radio" name="sortDir" value="unlabeled-first">
+          <span class="pill-dot"></span>
+          <span class="pill-text">Unlabeled first</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Action -->
+    <button id="sortBtn" disabled>Sort Cards</button>
+    <div id="status"></div>
+
+  </div><!-- /content -->
+</div><!-- /shell -->
+
+<link rel="stylesheet" href="https://p.trellocdn.com/power-up.css">
+<script src="https://p.trellocdn.com/power-up.min.js"></script>
+<script>
+(function () {
+
+  /* ── Apply board theme from URL params ─────────────────── */
+  (function applyTheme() {
+    var params   = new URLSearchParams(window.location.search);
+    var top      = params.get('top')    || '#62a6d4';
+    var bot      = params.get('bot')    || '#0f6391';
+    var bright   = params.get('bright') || 'dark';
+
+    document.documentElement.style.setProperty('--top', decodeURIComponent(top));
+    document.documentElement.style.setProperty('--bot', decodeURIComponent(bot));
+
+    if (bright === 'light') {
+      document.body.classList.add('light');
+    }
+  })();
+
+  /* ── Power-Up iframe init ──────────────────────────────── */
+  var t          = window.TrelloPowerUp.iframe();
+  var listSelect = document.getElementById('listSelect');
+  var sortBtn    = document.getElementById('sortBtn');
+  var statusEl   = document.getElementById('status');
+
+  function setStatus(msg, type) {
+    statusEl.textContent = msg;
+    statusEl.className   = type || '';
+  }
+
+  /* ── Load lists ────────────────────────────────────────── */
+  t.board('lists').then(function (board) {
+    var lists = board.lists;
+    listSelect.innerHTML = '';
+
+    if (!lists || lists.length === 0) {
+      listSelect.innerHTML = '<option value="">No lists found</option>';
+      return;
+    }
+
+    lists.forEach(function (list) {
+      var opt       = document.createElement('option');
+      opt.value     = list.id;
+      opt.textContent = list.name;
+      listSelect.appendChild(opt);
+    });
+
+    sortBtn.disabled = false;
+  }).catch(function () {
+    listSelect.innerHTML = '<option value="">Error loading lists</option>';
+    setStatus('Could not load board lists.', 'error');
+  });
+
+  /* ── Sort helpers ──────────────────────────────────────── */
+  function getLabelKey(card, unlabeledFirst) {
+    if (!card.labels || card.labels.length === 0) {
+      return unlabeledFirst ? '' : '\uffff';
+    }
+    var lbl = card.labels[0];
+    return (lbl.name || lbl.color || '').toLowerCase();
+  }
+
+  /* ── Sort button click ─────────────────────────────────── */
+  sortBtn.addEventListener('click', function () {
+    var listId = listSelect.value;
+    if (!listId) { setStatus('Please select a list first.', 'error'); return; }
+
+    var direction      = document.querySelector('input[name="sortDir"]:checked').value;
+    var unlabeledFirst = direction === 'unlabeled-first';
+    var descending     = direction === 'desc';
+
+    sortBtn.disabled = true;
+    setStatus('Fetching cards…');
+
+    t.board('cards').then(function (board) {
+      var cards = board.cards.filter(function (c) {
+        return c.idList === listId && !c.closed;
+      });
+
+      if (cards.length < 2) {
+        setStatus('Nothing to sort (fewer than 2 cards).', 'success');
+        sortBtn.disabled = false;
+        return;
+      }
+
+      cards.sort(function (a, b) {
+        var ka = getLabelKey(a, unlabeledFirst);
+        var kb = getLabelKey(b, unlabeledFirst);
+        if (ka < kb) return descending ?  1 : -1;
+        if (ka > kb) return descending ? -1 :  1;
+        return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+      });
+
+      setStatus('Sorting ' + cards.length + ' cards…');
+
+      t.getRestApi().then(function (trelloApi) {
+        return moveCardsInOrder(trelloApi, cards);
+      }).catch(function () {
+        requestAuthAndRetry(cards);
+      });
+
+    }).catch(function (err) {
+      setStatus('Error fetching cards.', 'error');
+      sortBtn.disabled = false;
+    });
+  });
+
+  /* ── Move cards via REST ───────────────────────────────── */
+  function moveCardsInOrder(trelloApi, sortedCards) {
+    var promises = sortedCards.map(function (card, index) {
+      return trelloApi.put('/1/cards/' + card.id, { pos: (index + 1) * 1024 });
+    });
+
+    Promise.all(promises).then(function () {
+      setStatus('✓ Cards sorted!', 'success');
+      sortBtn.disabled = false;
+      setTimeout(function () { t.closePopup(); }, 1100);
+    }).catch(function () {
+      setStatus('Error moving cards. Try again.', 'error');
+      sortBtn.disabled = false;
+    });
+  }
+
+  /* ── Auth fallback ─────────────────────────────────────── */
+  function requestAuthAndRetry(cards) {
+    t.getRestApi().isAuthorized().then(function (ok) {
+      if (!ok) {
+        setStatus('Authorization needed.', '');
+        t.getRestApi().authorize({ scope: 'read,write' }).then(function () {
+          setStatus('Authorized — click Sort again.', 'success');
+          sortBtn.disabled = false;
+        }).catch(function () {
+          setStatus('Authorization cancelled.', 'error');
+          sortBtn.disabled = false;
+        });
+      } else {
+        setStatus('Could not sort. Check permissions.', 'error');
+        sortBtn.disabled = false;
+      }
+    });
+  }
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sort by Label – Connector</title>
+</head>
+<body>
+<script src="https://p.trellocdn.com/power-up.min.js"></script>
+<script>
+  var BASE_URL = (function () {
+    var parts = window.location.href.split('/');
+    parts.pop();
+    return parts.join('/') + '/';
+  })();
+
+  window.TrelloPowerUp.initialize({
+
+    'board-buttons': function (t) {
+      return t.board('prefs').then(function (board) {
+        var prefs      = board.prefs;
+        var topColor   = encodeURIComponent(prefs.backgroundTopColor    || '#62a6d4');
+        var botColor   = encodeURIComponent(prefs.backgroundBottomColor || '#0f6391');
+        var brightness = encodeURIComponent(prefs.backgroundBrightness  || 'dark');
+
+        return [{
+          text: '⇅ Sort by Label',
+          callback: function (t) {
+            return t.popup({
+              title: 'Sort by Label',
+              url:   BASE_URL + 'sort-popup.html'
+                     + '?top='    + topColor
+                     + '&bot='    + botColor
+                     + '&bright=' + brightness,
+              height: 380
+            });
+          }
+        }];
+      });
+    }
+
+  }, { appName: 'Sort by Label' });
+</script>
+</body>
+</html>
